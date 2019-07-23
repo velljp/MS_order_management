@@ -3,18 +3,24 @@ var LINE_ITEM_NAME = "Lineitem name"
 var ITEM_NUMBER = "商品番号"
 var TAOBAO_LINK = "タオバオリンク"
 
-function findRow(sheet,val,col){
- 
-  var dat = sheet.getDataRange().getValues(); //受け取ったシートのデータを二次元配列に取得
- 
-  for(var i=1;i<dat.length;i++){
-    if(dat[i][col-1] === val){
-      return i+1;
-    }
-  }
-  return 0;
+function onOpen() {
+  SpreadsheetApp.getActiveSpreadsheet().addMenu(
+    'シート更新', 
+    [
+      {name: '上下反転', functionName: 'updown'},
+      {name: 'インポート to result', functionName: 'main'}
+    ]
+  )
 }
 
+function updown(){
+  var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet()
+  var lastRow = activeSheet.getLastRow()
+  var valuess = activeSheet.getDataRange().getValues()
+  valuess.shift()
+  var reverse = valuess.reverse()
+  activeSheet.getRange(2, 1, reverse.length, reverse[0].length).setValues(reverse)
+}      
 function extractHeader(sheet , headers){
   var headerRange = sheet.getRange("1:1")
   var lastCol = headerRange.getLastColumn()
@@ -51,17 +57,6 @@ function getHeaderIndex(sheet, headerStr){
     if(header == headerStr){return i}
   }
   return 0
-}
-
-function getLastColmunNotEmpty(sheet, row){
-  var rangeStr = row + ":" + row
-  var r = sheet.getRange(rangeStr)
-  var lastCol = r.getLastColumn()
-  for(var i = 1; i <= lastCol ; i++){
-    var header = r.getCell(1, i).getValue()
-    if(header == null || header.length == 0){return i-1}
-  }
-  return 0  
 }
 
 
@@ -129,11 +124,9 @@ function setTaobaoLink(itemSheet, itemHeaders, orderSheet, orderHeaders){
       }
       taobao = itemSheetData[j][taobaoIndexInItem-1]
       break
-    }
-    
+    }    
     taobaos.push([taobao])
   }
-  Logger.log(taobaos)
   
   orderSheet.getRange(2, taobaoIndexInOrder, taobaos.length , 1).setValues(taobaos)
 }
