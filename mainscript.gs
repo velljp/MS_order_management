@@ -20,7 +20,8 @@ function updown(){
   valuess.shift()
   var reverse = valuess.reverse()
   activeSheet.getRange(2, 1, reverse.length, reverse[0].length).setValues(reverse)
-}      
+}
+
 function extractHeader(sheet , headers){
   var headerRange = sheet.getRange("1:1")
   var lastCol = headerRange.getLastColumn()
@@ -35,18 +36,28 @@ function extractHeader(sheet , headers){
 
 
 function setValues(extractSheet, orderSheet, headers){
+  
   var lastRow = extractSheet.getLastRow()
-  var valuess = []
-  for(var i = 2; i <= lastRow ; i++){
-    var values = []
-    headers.forEach(function(header){
-      var v = extractSheet.getRange(i, header.value).getValue()
-      values.push(v)
-    })
-    valuess.push(values)
-  }
+  var margin = 200
+  var startIndex = 2
+  var lastIndex = Math.min(startIndex + margin, lastRow)
+  while(startIndex <= lastRow){
+    //なぜか１回のループで200~400回以上回せないようなので
+    var valuess = []
+    for(var i = startIndex; i <= lastIndex ; i++){
+      var values = []
+      headers.forEach(function(header){
+        var v = extractSheet.getRange(i, header.value).getValue()
+        values.push(v)
+      })
+      valuess.push(values)
+    }
     
-  orderSheet.getRange(2, 1, valuess.length, valuess[0].length).setValues(valuess)
+    resultSheet.getRange(startIndex, 1, valuess.length, valuess[0].length).setValues(valuess)
+
+    startIndex = lastIndex + 1
+    lastIndex = Math.min(startIndex + margin, lastRow)
+  }    
 }
 
 function getHeaderIndex(sheet, headerStr){
@@ -164,4 +175,6 @@ function main() {
   itemHeaders = extractHeader(itemSheet, itemHeaders)
   orderHeaders = extractHeader(orderSheet, orderHeaders)
   setTaobaoLink(itemSheet, itemHeaders, orderSheet, orderHeaders)
+  
+  Browser.msgBox("MS／商品管理のスクリプトが終わりました")
 }
